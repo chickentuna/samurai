@@ -1,5 +1,5 @@
 
-/* global Phaser */
+/* global Phaser io */
 
 class SimpleScene extends Phaser.Scene {
   preload () {
@@ -12,6 +12,7 @@ class SimpleScene extends Phaser.Scene {
 
   create () {
     this.add.image(400, 300, 'sky')
+    this.socket = io()
 
     this.star = this.add.image(400, 300, 'star')
     this.cursors = this.input.keyboard.createCursorKeys()
@@ -22,25 +23,37 @@ class SimpleScene extends Phaser.Scene {
     helloButton.on('pointerdown', () => {
       this.startCountDown()
     })
+
+    this.clock = this.add.text(400, 320, '', { fill: '#0f0' })
+    this.result = this.add.text(400, 340, '', { fill: '#f00' })
+    this.result.visible = false
+    this.started = false
   }
 
   startCountDown () {
+    this.started = true
     this.timestamp = null
-    this.time = 4000
-    this.clock = this.add.text(400, 320, this.time.toString(), { fill: '#0f0' })
+    this.timeLeft = 4000
+    this.clock.visible = true
+    this.result.visible = false
   }
 
   update (time, delta) {
-    this.time -= delta
-    if (this.time > 0) {
-      this.clock.setText(Math.floor(this.time).toString())
-    }
+    if (this.started) {
+      this.timeLeft -= delta
+      if (this.timeLeft > 0) {
+        this.clock.setText(Math.floor(this.timeLeft).toString())
+      } else {
+        this.clock.setText('0')
+      }
 
-    if (this.cursors.space.isDown && this.timestamp == null) {
-      this.timestamp = this.time
-      this.add.text(400, 340, this.time.toString(), { fill: '#f00' })
+      if (this.cursors.space.isDown && this.timestamp == null) {
+        this.timestamp = this.timeLeft
+        this.result.visible = true
+        this.result.setText(this.timeLeft.toString())
+      }
     }
-  }
+ }
 }
 
 var config = {
